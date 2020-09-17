@@ -23,7 +23,8 @@ public class WordBankData {
 			"  target VARCHAR(50) NOT NULL," +
 			"  wbname VARCHAR(150) NOT NULL," +
 			"  CONSTRAINT pk_wordbank PRIMARY KEY (id)," +
-			"  INDEX pk_whatwhowhat USING BTREE (wbkey, uuid, target)" +
+			"  INDEX pk_whatwhowhat USING BTREE (wbkey, uuid, target)," +
+			"  INDEX pk_what (wbkey)" +
 			");";
 	
 	public static final String insert =

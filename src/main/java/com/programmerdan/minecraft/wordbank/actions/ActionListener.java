@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
 
+import net.md_5.bungee.api.chat.ComponentBuilder;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -142,7 +143,7 @@ public class ActionListener implements Listener {
 								if (plugin().config().isDebug()) plugin().logger().log(
 										Level.INFO, "  - Used key {0} to load/generate {1}", 
 										new Object[]{record.key, record.value});
-							} catch (ExecutionException e) {
+							} catch (ExecutionException ignored) {
 
 							}
 						});
@@ -192,15 +193,22 @@ public class ActionListener implements Listener {
 							if (plugin().config().isDebug()) plugin().logger().log(
 									Level.INFO, "  - Used key {0} to generate {1}", 
 									new Object[]{curName, newNameRecord.value});
-                            
+
+							event.getPlayer().spigot()
+									.sendMessage(new ComponentBuilder("The ").color(net.md_5.bungee.api.ChatColor.WHITE)
+											.append(new ItemStack(item.getType()).getI18NDisplayName()).color(net.md_5.bungee.api.ChatColor.GRAY)
+											.append(" has been branded as ").color(net.md_5.bungee.api.ChatColor.WHITE)
+											.append(newNameRecord.value)
+											.create());
+
 							meta.setDisplayName(newNameRecord.value);
                             ArrayList<String> lore;
                             if (meta.hasLore()){
-                                 lore = (ArrayList<String>)meta.getLore(); //new ArrayList<String>(); //used to be "new ArrayList" thus wiping all prior lore?
+                            	lore = new ArrayList<>(meta.getLore());
                             } else {
-                                lore = new ArrayList<String>();
+                                lore = new ArrayList<>();
                             }
-                            
+
                             if (!(item.getType().name().contains("CHESTPLATE") //don't put the "Branded Item" on these things, so they can be rebranded but eh.
                                     || item.getType().name().contains("BOOTS")
                                     || item.getType().name().contains("LEGGINGS")
@@ -210,12 +218,7 @@ public class ActionListener implements Listener {
                                 meta.setLore(lore);
                             }
                             item.setItemMeta(meta);
-							
-							event.getPlayer().sendMessage(String.format("%sApplied a new %s of %s %sto the %s",
-									ChatColor.WHITE, plugin().config().getMakersMark(), 
-									meta.getDisplayName(), ChatColor.WHITE,
-									item.getType().toString()));
-							
+
 							// Schedule ASYNC task to add an entry to the database
 							// force=true for... logging purposes? to the database for some reason?
 							// why does it need player UUID and item type just to keep a unique key/value?
@@ -239,7 +242,6 @@ public class ActionListener implements Listener {
 					plugin().config().getCost().getType().toString(),
 					plugin().config().getMakersMark()));
 		}
-		return;
 	}
 	
 	@EventHandler(priority = EventPriority.HIGHEST)

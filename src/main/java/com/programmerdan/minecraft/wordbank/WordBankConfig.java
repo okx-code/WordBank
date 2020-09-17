@@ -22,10 +22,7 @@ public class WordBankConfig {
 	private boolean activate_any_length;
 	private String padding;
 	private ItemStack cost;
-	private CharConfig color;
 	private int word_max;
-	private CharConfig word_count;
-	private CharConfig[] word_config;
 	private String makers_mark;
 	private boolean debug;
 	private WordBank plugin;
@@ -52,25 +49,16 @@ public class WordBankConfig {
 		try (InputStream words = new FileInputStream(
 				new File(plugin().getDataFolder(),config.getString("wordlist_file")))) {
 			this.words = new WordList(words);
-		} catch (IOException e) {
+		} catch (IOException | NullPointerException e) {
 			plugin().logger().log(Level.SEVERE, "Failed to load word list.", e);
-		} catch (NullPointerException npe) {
-			plugin().logger().log(Level.SEVERE, "Failed to load word list.", npe);
 		}
-		
+
 		this.activation_length = config.getInt("activation_length", 10);
 		this.activate_any_length = config.getBoolean("activate_any_length", false);
 		this.padding = config.getString("padding", " ").substring(0, 1);
 		
 		this.word_max = config.getInt("word.max", 3);
 		this.makers_mark = config.getString("makers_mark", "Marked Item");
-		this.color = new CharConfig(config.getConfigurationSection("color"), activation_length);
-		this.word_count = new CharConfig(config.getConfigurationSection("word.count"), activation_length);
-		this.word_config = new CharConfig[this.word_max];
-		for (int a = 0; a < this.word_max; a++) {
-			this.word_config[a] = new CharConfig(config.getConfigurationSection("word." + a), activation_length);
-		}
-		
 		this.confirm_delay = config.getLong("confirm_delay", 10000l);
 		
 		// true if, should the database be enabled AND throw an exception when
@@ -134,23 +122,8 @@ public class WordBankConfig {
 		return cost;
 	}
 
-	public CharConfig getColor() {
-		return color;
-	}
-
 	public int getWordMax() {
 		return word_max;
-	}
-
-	public CharConfig getWordCount() {
-		return word_count;
-	}
-
-	public CharConfig getWordConfig(int idx) {
-		if (idx < 0 || idx > word_config.length) {
-			throw new IndexOutOfBoundsException("No word config exists for that");
-		}
-		return word_config[idx];
 	}
 	
 	public String getMakersMark() {

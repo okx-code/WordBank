@@ -1,8 +1,9 @@
 package com.programmerdan.minecraft.wordbank.util;
 
-import com.programmerdan.minecraft.wordbank.CharConfig;
 import com.programmerdan.minecraft.wordbank.NameRecord;
 import com.programmerdan.minecraft.wordbank.WordBank;
+import com.programmerdan.minecraft.wordbank.random.RandomSource;
+import org.bukkit.ChatColor;
 
 /**
  * Utility to build a name. Optionally marks it as "used" in the data store.
@@ -10,56 +11,52 @@ import com.programmerdan.minecraft.wordbank.WordBank;
  *
  */
 public class NameConstructor {
+	private static ChatColor[] COLOURS = new ChatColor[] {
+			ChatColor.BLACK,
+			ChatColor.DARK_BLUE,
+			ChatColor.DARK_GREEN,
+			ChatColor.DARK_AQUA,
+			ChatColor.DARK_RED,
+			ChatColor.DARK_PURPLE,
+			ChatColor.GOLD,
+			ChatColor.GRAY,
+			ChatColor.DARK_GRAY,
+			ChatColor.BLUE,
+			ChatColor.GREEN,
+			ChatColor.AQUA,
+			ChatColor.RED,
+			ChatColor.LIGHT_PURPLE,
+			ChatColor.YELLOW,
+			ChatColor.WHITE
+	};
+
 	/**
 	 * Constructing a name is a several step process.
-	 * 
+	 *
 	 * First, the color is computed.
 	 * Then, the number of words is computed.
 	 * Finally, each word is computed.
 	 * All these parts are joined and returned.
-	 * 
+	 *
 	 * @param key The character sequence used to construct a WordBank name.
 	 * @return The converted key.
 	 */
 	public static NameRecord buildName(String key) {
-		return buildName(key, WordBank.instance());
-	}
+		WordBank plugin = WordBank.instance();
+		RandomSource rng = plugin.getRandomSource();
 
-	/**
-	 * Expansion for {@link #buildName(String, boolean)} allowing specification of WordBank instance.
-	 * 
-	 * @param plugin the WordBank instance to use. Good for unit testing.
-	 */
-	public static NameRecord buildName(String key, WordBank plugin) {
-		
-		// First, compute color.
-		float whichColor = executeConfig(plugin.config().getColor(), key);
-		// Second, compute # of words.
-		float howManyWords = executeConfig(plugin.config().getWordCount(), key);
-		
-		int actualWords = 1 + (int) Math.round(howManyWords * (plugin.config().getWordMax()-1) );
-		
+		ChatColor color = rng.pick(COLOURS);
+		int words = rng.getInt(plugin.config().getWordMax()) + 1;
+
 		StringBuilder name = new StringBuilder();
-		name.append(org.bukkit.ChatColor.getByChar(Integer.toString((int)(15 * whichColor), 16)));
-		for (int nWord = 0; nWord < actualWords; nWord++) {
-			if (nWord > 0) { 
+		name.append(color);
+		for (int nWord = 0; nWord < words; nWord++) {
+			if (nWord > 0) {
 				name.append(" ");
 			}
-			name.append(plugin.config().getWords().getWord(
-					executeConfig(plugin.config().getWordConfig(nWord), key)
-				));
+			name.append(plugin.config().getWords().getWord(rng.getFloat()));
 		}
-		
+
 		return new NameRecord(key, name.toString(), false);
-	}
-	
-	public static float executeConfig(CharConfig conf, String key) {
-		Character[] extract = new Character[conf.charIndex.length];
-		int extractIdx = 0;
-		for (int idx : conf.charIndex) {
-			extract[extractIdx++] = (idx >= 0 && idx <= key.length() ? key.charAt(idx) : '0');
-		}
-		
-		return conf.charFunction.process(extract, conf.functionParams);
 	}
 }

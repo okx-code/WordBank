@@ -3,6 +3,8 @@ package com.programmerdan.minecraft.wordbank;
 import com.google.common.cache.LoadingCache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
+import com.programmerdan.minecraft.wordbank.random.RandomSource;
+import com.programmerdan.minecraft.wordbank.random.SecureRandomSource;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -35,8 +37,11 @@ public class WordBank extends JavaPlugin {
 	private WordBankConfig config;
 	private WordBankData data;
 	private LoadingCache<String, NameRecord> nameCache; // laggy database hits? that's not very cache money tbh
+	private RandomSource randomSource;
 
 	public void onEnable() {
+		randomSource = new SecureRandomSource();
+
 		WordBank.plugin = this;
 		WordBank.instance().saveDefaultConfig();
 		WordBank.instance().reloadConfig();
@@ -131,5 +136,9 @@ public class WordBank extends JavaPlugin {
 	
 	public LoadingCache<String, NameRecord> nameCache() {
 		return nameCache;
+	}
+
+	public RandomSource getRandomSource() {
+		return randomSource;
 	}
 }
