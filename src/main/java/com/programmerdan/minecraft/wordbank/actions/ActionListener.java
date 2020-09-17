@@ -62,7 +62,29 @@ public class ActionListener implements Listener {
 		Block target = event.getClickedBlock();
 		if (target == null || target.getType() != Material.ENCHANTMENT_TABLE) return;
 		if (plugin().config().isDebug()) plugin().logger().info("  - is touch Enchantment Table");
-		
+        
+        Material itemType = event.getItem().getType();
+        if (itemType == Material.GOLD_INGOT
+                || itemType == Material.IRON_INGOT
+                || itemType == Material.NETHER_STALK
+                || itemType == Material.WHEAT
+                || itemType == Material.POTATO_ITEM
+                || itemType == Material.CARROT_ITEM
+                || itemType == Material.INK_SACK
+                || itemType == Material.BEETROOT
+                || itemType == Material.PRISMARINE_SHARD
+                || itemType == Material.GLOWSTONE_DUST
+                || itemType == Material.GOLDEN_APPLE
+                || itemType == Material.ENDER_CHEST
+                || itemType == Material.FIREBALL
+                || itemType == Material.ENDER_PEARL
+                || itemType == Material.SUGAR
+                || itemType == Material.NETHER_STAR
+                || itemType == Material.STONE_BUTTON){
+            event.getPlayer().sendMessage("You cannot brand this type of item.");
+            return;
+        }
+        
 		// no item or item has no custom data
 		ItemStack item = event.getItem();
 		if (item == null || !item.hasItemMeta()) return;
@@ -170,12 +192,24 @@ public class ActionListener implements Listener {
 							if (plugin().config().isDebug()) plugin().logger().log(
 									Level.INFO, "  - Used key {0} to generate {1}", 
 									new Object[]{curName, newNameRecord.value});
-	
+                            
 							meta.setDisplayName(newNameRecord.value);
-							ArrayList<String> lore = new ArrayList<String>();
-							lore.add(plugin().config().getMakersMark());
-							meta.setLore(lore);
-							item.setItemMeta(meta);
+                            ArrayList<String> lore;
+                            if (meta.hasLore()){
+                                 lore = (ArrayList<String>)meta.getLore(); //new ArrayList<String>(); //used to be "new ArrayList" thus wiping all prior lore?
+                            } else {
+                                lore = new ArrayList<String>();
+                            }
+                            
+                            if (!(item.getType().name().contains("CHESTPLATE") //don't put the "Branded Item" on these things, so they can be rebranded but eh.
+                                    || item.getType().name().contains("BOOTS")
+                                    || item.getType().name().contains("LEGGINGS")
+                                    || item.getType().name().contains("HELMET")
+                                    || item.getType().name().contains("PICKAXE"))){
+                                lore.add(plugin().config().getMakersMark());
+                                meta.setLore(lore);
+                            }
+                            item.setItemMeta(meta);
 							
 							event.getPlayer().sendMessage(String.format("%sApplied a new %s of %s %sto the %s",
 									ChatColor.WHITE, plugin().config().getMakersMark(), 
